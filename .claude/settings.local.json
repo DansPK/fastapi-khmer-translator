@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:translatekh.mptc.gov.kh)",
+      "Bash(Get-ChildItem D:\\\\TranslateFastAPI -Exclude .venv -File)",
+      "Bash(Select-Object Name)"
+    ]
+  }
+}
