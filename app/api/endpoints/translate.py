@@ -7,6 +7,7 @@ Clients switching from the real TranslateKH API need only change:
 
 Request and response schemas are identical.
 """
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,6 +15,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.dependencies import get_translation_service, verify_credentials
 from app.schemas.translate import TranslateRequest, TranslateResponse
 from app.services.translation import TranslationService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["translation"])
 
@@ -52,12 +55,16 @@ async def translate(
             tgt_lang=body.tgt_lang,
         )
     except NotImplementedError as exc:
+        logger.warning("translate: unsupported operation: %s", exc)
         raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(exc)
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="This translation operation is not supported.",
         ) from exc
     except Exception as exc:
+        logger.error("translate: provider failure: %s", exc, exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Translation failed. Please try again later.",
         ) from exc
 
     return TranslateResponse(translate_text=results)

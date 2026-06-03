@@ -11,20 +11,19 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 # Paths exempt from rate limiting
-_EXCLUDED = frozenset({"/health", "/docs", "/redoc", "/openapi.json"})
+_EXCLUDED = frozenset({"/health", "/health/detailed", "/docs", "/redoc", "/openapi.json"})
 
 
 def _client_ip(request: Request) -> str:
     """
-    Extract the real client IP, respecting common reverse-proxy headers.
-    Trust order: X-Real-IP → leftmost X-Forwarded-For → direct connection.
+    Extract the client IP from the direct TCP connection.
+
+    Proxy headers (X-Forwarded-For, X-Real-IP) are intentionally ignored
+    because they can be spoofed by any client to bypass rate limiting.
+    When deployed behind a trusted reverse proxy, configure the proxy to
+    set the REMOTE_ADDR / client.host correctly (e.g. Nginx real_ip module,
+    or Uvicorn --proxy-headers with --forwarded-allow-ips).
     """
-    real_ip = request.headers.get("X-Real-IP")
-    if real_ip:
-        return real_ip.strip()
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
     if request.client:
         return request.client.host
     return "unknown"

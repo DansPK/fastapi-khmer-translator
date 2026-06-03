@@ -112,8 +112,8 @@ class GeminiProvider(TranslationProvider):
 # Pure functions — no instance state needed
 # ---------------------------------------------------------------------------
 
-def _build_payload(texts: list[str], src_lang: str, tgt_lang: str) -> dict[str, Any]:
-    pair = _prompt_builder.build(texts, src_lang, tgt_lang)
+def _build_payload(texts: list[str], src_lang: str, tgt_lang: str, *, strict: bool = False) -> dict[str, Any]:
+    pair = _prompt_builder.build(texts, src_lang, tgt_lang, strict=strict)
     return {
         # system_instruction keeps role separation clean for Gemini models
         "system_instruction": {

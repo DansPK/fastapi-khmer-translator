@@ -1,4 +1,10 @@
-from pydantic import BaseModel, Field
+from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
+
+# Each individual text is capped at 5 000 characters to prevent
+# memory abuse and runaway provider API bills.
+BoundedText = Annotated[str, StringConstraints(max_length=5000)]
 
 
 class TranslateRequest(BaseModel):
@@ -6,17 +12,17 @@ class TranslateRequest(BaseModel):
     TranslateKH-compatible request body.
     input_text is always an array — single sentences are wrapped in a one-element list.
     """
-    input_text: list[str] = Field(
+    input_text: list[BoundedText] = Field(
         ...,
         min_length=1,
         max_length=10,
         description=(
-            "One or more texts to translate (1–10 items). "
+            "One or more texts to translate (1–10 items, each up to 5 000 chars). "
             "Single sentences must still be sent as a one-element array."
         ),
     )
-    src_lang: str = Field(..., description="Source language code, e.g. 'eng' or 'en'")
-    tgt_lang: str = Field(..., description="Target language code, e.g. 'kh' or 'km'")
+    src_lang: str = Field(..., min_length=1, max_length=10, description="Source language code, e.g. 'eng' or 'en'")
+    tgt_lang: str = Field(..., min_length=1, max_length=10, description="Target language code, e.g. 'kh' or 'km'")
 
     model_config = {
         "json_schema_extra": {

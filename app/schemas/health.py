@@ -11,3 +11,7 @@ class HealthResponse(BaseModel):
     version: str
     environment: str
     services: dict[str, ServiceStatus]
+
+
+class PublicHealthResponse(BaseModel):
+    status: str
