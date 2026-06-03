@@ -93,6 +93,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     settings = get_settings()
 
+    is_prod = settings.environment == "production"
+
     app = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
@@ -109,9 +111,9 @@ def create_app() -> FastAPI:
             "2. Gemini Flash Lite — LLM fallback\n"
             "3. OpenRouter free — last resort"
         ),
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json",
+        docs_url=None if is_prod else "/docs",
+        redoc_url=None if is_prod else "/redoc",
+        openapi_url=None if is_prod else "/openapi.json",
         lifespan=lifespan,
     )
 
