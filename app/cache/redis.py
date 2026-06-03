@@ -74,5 +74,6 @@ class RedisCache:
     async def ping(self) -> bool:
         try:
             return bool(await self._client.ping())
-        except Exception:
+        except Exception as exc:
+            logger.warning("redis ping failed err=%s", exc)
             return False

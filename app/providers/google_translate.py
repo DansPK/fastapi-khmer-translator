@@ -148,7 +148,8 @@ class GoogleTranslateProvider(TranslationProvider):
         try:
             await self.translate(["ok"], "en", "fr")
             return True
-        except Exception:
+        except Exception as exc:
+            logger.warning("health_check provider=google_translate status=error reason=%s", exc)
             return False
 
     # ------------------------------------------------------------------

@@ -158,7 +158,8 @@ class OpenRouterProvider(TranslationProvider):
             async with httpx.AsyncClient(timeout=httpx.Timeout(5.0)) as client:
                 resp = await client.get(_MODELS_URL, headers=self._headers)
                 return resp.status_code == 200
-        except Exception:
+        except Exception as exc:
+            logger.warning("health_check provider=openrouter status=error reason=%s", exc)
             return False
 
     # ------------------------------------------------------------------
