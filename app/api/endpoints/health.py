@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
@@ -6,6 +7,8 @@ from app.cache.redis import RedisCache, get_redis_client
 from app.config import Settings, get_settings
 from app.core.dependencies import get_provider
 from app.schemas.health import HealthResponse, ServiceStatus
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -22,10 +25,19 @@ async def health(
 ) -> HealthResponse:
     provider = get_provider(request)
 
-    redis_client = await get_redis_client()
-    cache = RedisCache(redis_client, settings.redis_cache_ttl)
-    redis_ok = await cache.ping()
-    provider_ok = await provider.health_check()
+    redis_ok = False
+    try:
+        redis_client = await get_redis_client()
+        cache = RedisCache(redis_client, settings.redis_cache_ttl)
+        redis_ok = await cache.ping()
+    except Exception as exc:
+        logger.warning("health: redis check failed err=%s", exc)
+
+    provider_ok = False
+    try:
+        provider_ok = await provider.health_check()
+    except Exception as exc:
+        logger.warning("health: provider check failed provider=%s err=%s", provider.name, exc)
 
     overall = "healthy" if (redis_ok and provider_ok) else "degraded"
 

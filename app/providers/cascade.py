@@ -89,6 +89,10 @@ class CascadeProvider(TranslationProvider):
             try:
                 if await provider.health_check():
                     return True
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "health_check provider=%s status=error reason=%s",
+                    provider.name,
+                    exc,
+                )
         return False

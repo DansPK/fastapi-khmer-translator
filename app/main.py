@@ -85,7 +85,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     _register_providers()
     app.state.provider = resolve(settings.translation_provider)
-    await get_redis_client()
+
+    try:
+        await get_redis_client()
+        logger.info("redis connection established url=%s", settings.redis_url)
+    except Exception as exc:
+        logger.error(
+            "redis connection failed url=%s err=%s — "
+            "the app will start but caching and rate-limiting will be unavailable",
+            settings.redis_url,
+            exc,
+        )
+
     yield
     await close_redis_client()
 
